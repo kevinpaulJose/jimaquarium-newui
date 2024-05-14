@@ -1,5 +1,5 @@
-import { StatusBar } from 'expo-status-bar';
-import { BackHandler, Linking, LogBox, Platform, StyleSheet, Text, View } from 'react-native';
+
+import { BackHandler, Linking, LogBox, Platform, StyleSheet, Text, View, StatusBar } from 'react-native';
 import BottomNavigation from './lib/BottomNavigation';
 import { createContext, useEffect, useState } from 'react';
 import * as Updates from "expo-updates";
@@ -302,8 +302,11 @@ export default function App() {
       pin, setPin, phone, setPhone,
       shipping, setShipping
     }}>
-      {openSnackBar && <SnackBar />}
 
+      <View style={{height: Platform.OS === "ios" ? 40 : StatusBar.currentHeight, width: 2}}>
+
+      </View>
+      {openSnackBar && <SnackBar />}
       <AppBarWrapper child={<>
         {RenderPage().appBar}
       </>} />
