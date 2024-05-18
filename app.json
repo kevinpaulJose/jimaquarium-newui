@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "newui",
+    "name": "Jim Aquarium",
     "slug": "newui",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +22,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.bkevin1999.newui"
+      "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#ffffff"
+      },
+      "versionCode": 10,
+      "package": "com.jimaquarium.newui",
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png",

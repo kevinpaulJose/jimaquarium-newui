@@ -2,8 +2,9 @@
 import { BackHandler, Linking, LogBox, Platform, StyleSheet, Text, View, StatusBar } from 'react-native';
 import BottomNavigation from './lib/BottomNavigation';
 import { createContext, useEffect, useState } from 'react';
-import * as Updates from "expo-updates";
-import { WEB_URL, checkUserState, generateOrderId, getProductsAndTotal, navItems, removeData, retrieveData, routePrevious, routeTo, storeData } from './lib/utils';
+import auth from '@react-native-firebase/auth';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { FIREBASE_CLIENT_ID, WEB_URL, checkUserState, generateOrderId, getProductsAndTotal, navItems, removeData, retrieveData, routePrevious, routeTo, storeData } from './lib/utils';
 import AppBarWrapper from './lib/AppBarWrapper';
 import Home from './lib/Home/Home';
 import Cart from './lib/Cart/Cart';
@@ -24,7 +25,11 @@ import SnackBar from './lib/Shared/SnackBar';
 import makeApiRequest from './lib/api';
 import PaymentProcessing from './lib/PaymentProcessing/PaymentProcessing';
 import { paymentMethod } from './lib/constants';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { AppLoadingScreen } from './lib/Shared/AppLoadingScreen';
 
+
+const queryClient = new QueryClient();
 export const AppContext = createContext(null);
 // const currectUser = retrieveData({ key: "user" })
 export default function App() {
@@ -73,7 +78,16 @@ export default function App() {
   const [userState, setUserState] = useState(selectedAddress !== null ? selectedAddress?.state : "");
   const [pin, setPin] = useState(selectedAddress !== null ? selectedAddress?.pin : "");
   const [phone, setPhone] = useState(selectedAddress !== null ? selectedAddress?.phone : "");
-
+  const [user, setUser] = useState("");
+  const [cartAndOthersLoading, setCartAndOthersLoading] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [consent, setConsent] = useState({
+    label: "e",
+    action: () => { },
+    visible: false,
+    activeLabel: ""
+  })
 
 
   useEffect(() => {
@@ -96,11 +110,75 @@ export default function App() {
     redirectOrder();
   }, []);
 
+  async function onAuthStateChanged(user) {
+    console.log("Setting User - ", user);
+    if (user) {
+      setCartAndOthersLoading(true);
+      setUser(user);
+      setUserDetails({
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL
+      });
+      await storeData({
+        key: "user", value: {
+          name: user.displayName,
+          email: user.email,
+          photo: user.photoURL
+        }
+      });
+      Promise.all([
+        cartAPI(
+          setSnackSeverity,
+          setOpenSnackbar,
+          setOpenSnackbarContent,
+          setCart
+        ),
+        addressAPI(
+          setSnackSeverity,
+          setOpenSnackbar,
+          setOpenSnackbarContent,
+          setAddress
+        ),
+        ordersAPI(
+          setSnackSeverity,
+          setOpenSnackbar,
+          setOpenSnackbarContent,
+          setOrders
+        ),
+      ])
+        .then(() => {
+         
+
+        })
+        .catch((e) => {
+          console.log(e);
+          // setInitialTotal();
+          // setAppLoading(false);
+        }).finally(() => {
+          setCartAndOthersLoading(false);
+          setAppLoading(false);
+        })
+    } else {
+      setUserDetails({
+
+      });
+      await removeData({ key: "user" })
+    }
+
+    // if (initializing) setInitializing(false);
+  }
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
+
 
   const RenderPage = () => {
     switch (page.page) {
       case "home":
-        return { content: <Home />, appBar: <HomeAppBar /> }
+        return {
+          content: <Home />, appBar: <HomeAppBar /> }
       case "searchProducts":
         return { content: <SearchPage />, appBar: <SearchAppBar /> }
       case "allProducts":
@@ -149,79 +227,76 @@ export default function App() {
 
 
 
-  useEffect(() => {
-    // setInterval(() => {
-    //   retrieveData({ key: "user" }).then((item) => {
-    //     if(item) {
-    //       setIsUserLoggedIn(true);
-    //       console.log(item);
-    //     } else {
-    //       console.log("Not logged in");
-    //     }
-    //   })
-    // }, 2000)
 
-  })
 
-  const productsAPI = async () => {
-    // const cachedProducts = await db.table('product').toArray();
-    // if (cachedProducts.length > 0) {
-    //   setLoadingCache(true);
-    //   console.log("Cashed items");
-    //   let categoriesArray = [];
-    //   const tempCategoriesArray = cachedProducts.map(
-    //     (object) => object.categories
-    //   );
-    //   categoriesArray = [...new Set(tempCategoriesArray)];
-    //   backgroundSyncProduct();
-    //   setCategories(categoriesArray);
-    //   setProducts(cachedProducts);
-    //   setLoadingCache(false);
-    // } else {
-    setLoadingCache(false);
-    setProductLoading(true);
-    try {
-      let res = await makeApiRequest(
-        "GET",
-        {},
-        "/products/all",
-        setSnackSeverity,
-        setOpenSnackbar,
-        setOpenSnackbarContent,
-        false
-      );
+  // const productsAPI = async () => {
+  //   // const cachedProducts = await db.table('product').toArray();
+  //   // if (cachedProducts.length > 0) {
+  //   //   setLoadingCache(true);
+  //   //   console.log("Cashed items");
+  //   //   let categoriesArray = [];
+  //   //   const tempCategoriesArray = cachedProducts.map(
+  //   //     (object) => object.categories
+  //   //   );
+  //   //   categoriesArray = [...new Set(tempCategoriesArray)];
+  //   //   backgroundSyncProduct();
+  //   //   setCategories(categoriesArray);
+  //   //   setProducts(cachedProducts);
+  //   //   setLoadingCache(false);
+  //   // } else {
+  //   let cachedProducts = await retrieveData({ key: "products" });
+  //   if (cachedProducts) {
+  //     console.log("Restoring from cached Products");
+  //     setProducts(cachedProducts.products);
 
-      if (res?.status === 200) {
-        let categoriesArray = [];
-        if (res?.products) {
-          // console.log(res.products);
-          const product = res.products;
-          // await db.table('product').bulkAdd(product);
-          // const cachedProducts = await db.table('products').toArray();
-          // console.log(cachedProducts);
-          const tempCategoriesArray = res?.products?.map(
-            (object) => object.categories
-          );
-          categoriesArray = [...new Set(tempCategoriesArray)];
-        }
-        setCategories(categoriesArray);
-        setProducts(res?.products);
-      }
-    } catch (e) {
-    } finally {
-      setProductLoading(false);
-    }
-    // }
+  //   } else {
+  //     setLoadingCache(false);
+  //     setProductLoading(true);
+  //     try {
+  //       let res = await makeApiRequest(
+  //         "GET",
+  //         {},
+  //         "/products/all",
+  //         setSnackSeverity,
+  //         setOpenSnackbar,
+  //         setOpenSnackbarContent,
+  //         false
+  //       );
 
-  };
+  //       if (res?.status === 200) {
+  //         let categoriesArray = [];
+  //         if (res?.products) {
+  //           // console.log(res.products);
+  //           const product = res.products;
+  //           // await db.table('product').bulkAdd(product);
+  //           // const cachedProducts = await db.table('products').toArray();
+  //           // console.log(cachedProducts);
+  //           const tempCategoriesArray = res?.products?.map(
+  //             (object) => object.categories
+  //           );
+  //           categoriesArray = [...new Set(tempCategoriesArray)];
+  //         }
+  //         setCategories(categoriesArray);
+  //         setProducts(res?.products);
+  //         await storeData({ key: "products", value: { producs: res?.products } })
+  //       }
+  //     } catch (e) {
+  //     } finally {
+  //       setProductLoading(false);
+  //     }
+  //   }
+
+  //   // }
+
+  // };
 
 
   useEffect(() => {
     if (products.length === 0) {
-      console.log("Calling API");
       setAppLoading(true);
+      setCartAndOthersLoading(true);
       Promise.all([
-        productsAPI(),
+        // productsAPI(),
         cartAPI(
           setSnackSeverity,
           setOpenSnackbar,
@@ -243,17 +318,18 @@ export default function App() {
       ])
         .then(() => {
           setAppLoading(false);
-          // if (localOrderId) {
-          //   setSubPage("loading");
-          //   setSidePage("Loading");
-          // }
+
         })
         .catch((e) => {
+          console.log(e);
           // setInitialTotal();
           // setAppLoading(false);
-        });
+        }).finally(() => {
+          setAppLoading(false);
+          setCartAndOthersLoading(false);
+        })
     } else {
-      // setAppLoading(false);
+
       console.log("NOT Calling API");
     }
   }, []);
@@ -300,20 +376,28 @@ export default function App() {
       addressSaving, setAddressSaving,
       name, setName, line1, setLine1, line2, setLine2, city, setCity, userState, setUserState,
       pin, setPin, phone, setPhone,
-      shipping, setShipping
+      shipping, setShipping,
+      loggingOut, setLoggingOut,
+      cartAndOthersLoading, setCartAndOthersLoading,
+      consent, setConsent,
+      loggingIn, setLoggingIn,
+      productLoading, setProductLoading
     }}>
 
-      <View style={{height: Platform.OS === "ios" ? 40 : StatusBar.currentHeight, width: 2}}>
+      {/* <View style={{height: Platform.OS === "ios" ? 40 : 0, width: 2}}>
 
-      </View>
+      </View> */}
       {openSnackBar && <SnackBar />}
-      <AppBarWrapper child={<>
-        {RenderPage().appBar}
-      </>} />
+      <QueryClientProvider client={queryClient}>
+        <AppBarWrapper child={<>
+          {RenderPage().appBar}
+        </>} />
+      </QueryClientProvider>
+
       <View style={styles.container}>
         {RenderPage().content}
       </View>
-
+          {products.length === 0 && <AppLoadingScreen />}
 
       <BottomNavigation />
     </AppContext.Provider>
@@ -440,7 +524,7 @@ export const addToCartAPI = async ({
 }) => {
   const userDetails = await retrieveData({ key: "user" })
   setSaving(true);
-  console.log("selected", selectedProduct);
+  // console.log("selected", selectedProduct);
   if (selectedProduct) {
     if (userDetails?.email) {
       let updatedLocalCart = cart;
@@ -496,7 +580,7 @@ export const addToCartAPI = async ({
       } else {
         updatedLocalCart = [];
       }
-
+      console.log("Add to cart is called");
       makeApiRequest(
         "POST",
         {
@@ -512,7 +596,7 @@ export const addToCartAPI = async ({
         .then(async (res) => {
           if (res?.status === 200) {
             if (res?.cart) {
-
+              console.log("Add to cart is called - done");
               let orderId = await retrieveData({ key: "orderId" });
               setCart(res?.cart);
               setSaving(false);
@@ -553,53 +637,60 @@ export const addToCartAPI = async ({
           setOpenSnackbar(true);
           setOpenSnackbarContent("Error adding to cart. Please try again later");
           setSaving(false);
-        });
+        }).finally(() => {
+          setSaving(false);
+        })
     } else {
-      let response = await login({setIsUserLoggedIn, setUserDetails});
-      console.log(response);
-      if (response) {
-        await cartAPI(
-          setSnackSeverity,
-          setOpenSnackbar,
-          setOpenSnackbarContent,
-          setCart
-        );
-        await addressAPI(
-          setSnackSeverity,
-          setOpenSnackbar,
-          setOpenSnackbarContent,
-          setAddress
-        );
-        await ordersAPI(
-          setSnackSeverity,
-          setOpenSnackbar,
-          setOpenSnackbarContent,
-          setOrders
-        );
+      setSaving(false);
+      setSnackSeverity("warning");
+      setOpenSnackbarContent("Please Login to Add to Cart");
+      setOpenSnackbar(true);
+      // let response = await login({setIsUserLoggedIn, setUserDetails});
+      // console.log(response);
+      // if (response) {
+      //   await cartAPI(
+      //     setSnackSeverity,
+      //     setOpenSnackbar,
+      //     setOpenSnackbarContent,
+      //     setCart
+      //   );
+      //   await addressAPI(
+      //     setSnackSeverity,
+      //     setOpenSnackbar,
+      //     setOpenSnackbarContent,
+      //     setAddress
+      //   );
+      //   await ordersAPI(
+      //     setSnackSeverity,
+      //     setOpenSnackbar,
+      //     setOpenSnackbarContent,
+      //     setOrders
+      //   );
 
-        await addToCartAPI({
-          recalled: true,
-          cart: cart,
-          selectedProduct: selectedProduct,
-          setCart: setCart,
-          setOpenSnackbar: setOpenSnackbar,
-          setOpenSnackbarContent: setOpenSnackbarContent,
-          setSaving: setSaving,
-          setSnackSeverity: setSnackSeverity,
-          fromCart: false,
-          operator: "+",
-          setAddress: setAddress,
-          setOrders: setOrders,
-          setPage, setRouteStack, routeStack,  setIsUserLoggedIn, setUserDetails
-        });
-      } else {
-        setSaving(false);
-      }
+      //   await addToCartAPI({
+      //     recalled: true,
+      //     cart: cart,
+      //     selectedProduct: selectedProduct,
+      //     setCart: setCart,
+      //     setOpenSnackbar: setOpenSnackbar,
+      //     setOpenSnackbarContent: setOpenSnackbarContent,
+      //     setSaving: setSaving,
+      //     setSnackSeverity: setSnackSeverity,
+      //     fromCart: false,
+      //     operator: "+",
+      //     setAddress: setAddress,
+      //     setOrders: setOrders,
+      //     setPage, setRouteStack, routeStack,  setIsUserLoggedIn, setUserDetails
+      //   });
+      // } else {
+      //   setSaving(false);
+      // }
     }
   } else {
     setSnackSeverity("warning");
     setOpenSnackbarContent("Products are not in stock");
     setOpenSnackbar(true);
+    setSaving(false);
   }
 
 };
@@ -618,7 +709,7 @@ export const createOrder_upi = async ({
   products,
   cart,
   setPage,
-  routeStack, setRouteStack,  setIsUserLoggedIn, setUserDetails
+  routeStack, setRouteStack, setIsUserLoggedIn, setUserDetails
 }) => {
   try {
     // if (isMobile) {
@@ -677,7 +768,7 @@ export const createOrder_upi = async ({
               email: userDetails?.email,
               phone: address.filter((v) => v.default)[0].phone,
               order_id: order_id,
-              amount: 
+              amount:
                 parseFloat(productsInCart.shipping) +
                 parseFloat(productsInCart.total),
             },
@@ -687,16 +778,16 @@ export const createOrder_upi = async ({
             setOpenSnackbarContent,
             false
           );
-          if(res?.code === 200) {
+          if (res?.code === 200) {
             paymentLink = res?.data?.payment_link;
             await storeData({ key: "paymentLink", value: { paymentLink: paymentLink } });
           }
-        } else if(paymentMethod.sabPaise) {
+        } else if (paymentMethod.sabPaise) {
           paymentLink = `${WEB_URL}/pay?name=${userDetails?.name}?address=${localAddress}?amount=1?phone=${phoneNumber}?orderId=${order_id}?email=${userDetails?.email}`;
           await storeData({ key: "paymentLink", value: { paymentLink: paymentLink } });
         }
-        
-       
+
+
 
 
         let res1 = await makeApiRequest(
@@ -731,7 +822,7 @@ export const createOrder_upi = async ({
             setAddress: setAddress,
             setOrders: setOrders,
             setPage: setPage,
-            routeStack, setRouteStack,  setIsUserLoggedIn, setUserDetails
+            routeStack, setRouteStack, setIsUserLoggedIn, setUserDetails
 
           });
 
@@ -768,18 +859,67 @@ export const createOrder_upi = async ({
   }
 };
 
-export const login = async ({ setIsUserLoggedIn, setUserDetails }) => {
-  await storeData({
-    value: {
-      name: "Kevin",
-      email: "bkevin1999@gmail.com"
-    }, key: "user"
+async function onGoogleButtonPress() {
+  // Get the user's ID token
+  const { idToken } = await GoogleSignin.signIn();
+  // Create a Google credential with the token
+  const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+  // Sign in the user with the credential
+  return auth().signInWithCredential(googleCredential);
+}
+
+export const login = async ({ loggingIn,  setLoggingIn }) => {
+  if(!loggingIn) {
+    setLoggingIn(true);
+    GoogleSignin.configure({
+      webClientId: FIREBASE_CLIENT_ID,
+    });
+    onGoogleButtonPress().then(() => console.log('Signed in with Google!'))
+      .catch(e => console.log(e))
+      .finally(() => setLoggingIn(false))
+  }
+ 
+  // await storeData({
+  //   value: {
+  //     name: "Kevin",
+  //     email: "bkevin1999@gmail.com"
+  //   }, key: "user"
+  // });
+  // const res = checkUserState({ setIsUserLoggedIn, setUserDetails });
+  // if(Platform.OS !== "web") 
+  //   await Updates.reloadAsync();
+  // else 
+  //   window.location.reload();
+  // return res;
+
+}
+
+export const logout = async ({ setIsUserLoggedIn, setUserDetails,
+  setAddress, setOrders,
+  setCart,
+  setLoggingOut, loggingOut
+}) => {
+  if(!loggingOut) {
+    try {
+      setLoggingOut(true);
+  GoogleSignin.configure({
+    webClientId: FIREBASE_CLIENT_ID,
   });
-  const res = checkUserState({ setIsUserLoggedIn, setUserDetails });
-  if(Platform.OS !== "web") 
-    await Updates.reloadAsync();
-  else 
-    window.location.reload();
-  return res;
+  await GoogleSignin.revokeAccess();
+  await GoogleSignin.signOut();
+  auth().signOut()
+  await removeData({ key: "user" });
+  setIsUserLoggedIn(false);
+  setUserDetails({});
+  setAddress([]);
+  setOrders([]);
+  setCart([]);
+    }
+    catch(e){
+      console.log(e);
+    } finally {
+      setLoggingOut(false)
+    }
+  } 
 
 }
