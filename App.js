@@ -100,6 +100,7 @@ export default function App() {
     setPhone(selectedAddress !== null ? selectedAddress?.phone : "");
   }, [selectedAddress])
 
+
   const redirectOrder = async () => {
     const orderId = await retrieveData({ key: "orderId" });
     if (orderId) {
