@@ -1,0 +1,92 @@
+{
+  "project_info": {
+    "project_number": "654317343091",
+    "project_id": "jimaquarim",
+    "storage_bucket": "jimaquarim.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654317343091:android:0d6b0b1ef7ac789c9ff506",
+        "android_client_info": {
+          "package_name": "com.jimaquarium.jimaquarium"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654317343091-3ddkmbv1t10ai7o02innhlfijpaocrtl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jimaquarium.jimaquarium",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "654317343091-h3sc7jugnul4sf4o24srbferre5uv2ck.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jimaquarium.jimaquarium",
+            "certificate_hash": "6409dbbdb26b9e58c97699126942264bd40c9cdc"
+          }
+        },
+        {
+          "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKrJoU-RoR-ChRsReYmjHEzYKNRznq6Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654317343091:android:b9d35e34d10ab9cc9ff506",
+        "android_client_info": {
+          "package_name": "com.jimaquarium.newui"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654317343091-74amedqandencf5nb19mnf8p3u6a5eun.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jimaquarium.newui",
+            "certificate_hash": "6409dbbdb26b9e58c97699126942264bd40c9cdc"
+          }
+        },
+        {
+          "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKrJoU-RoR-ChRsReYmjHEzYKNRznq6Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
