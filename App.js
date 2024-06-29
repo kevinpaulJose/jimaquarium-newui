@@ -1,48 +1,64 @@
-
-import { BackHandler, Linking, LogBox, Platform, StyleSheet, Text, View, StatusBar } from 'react-native';
-import BottomNavigation from './lib/BottomNavigation';
-import { createContext, useEffect, useState } from 'react';
-import auth from '@react-native-firebase/auth';
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { FIREBASE_CLIENT_ID, WEB_URL, checkUserState, generateOrderId, getProductsAndTotal, navItems, removeData, retrieveData, routePrevious, routeTo, storeData } from './lib/utils';
-import AppBarWrapper from './lib/AppBarWrapper';
-import Home from './lib/Home/Home';
-import Cart from './lib/Cart/Cart';
-import Orders from './lib/Orders/Orders';
-import Profile from './lib/Profile/Profile';
-import HomeAppBar from './lib/Home/HomeAppBar';
-import ProductDetailAppBar from './lib/ProductDetail/ProductDetailAppBar';
-import ProductDetails from './lib/ProductDetail/ProductDetails';
-import AppBarGeneric from './lib/Shared/AppBarGeneric';
-import Checkout from './lib/Checkout/Checkout';
-import UpdateAddress from './lib/Address/UpdateAddress';
-import OrderDetail from './lib/OrderDetail/OrderDetail';
-import ProfileAppBar from './lib/Profile/ProfileAppBar';
-import SearchPage from './lib/Search/SearchPage';
-import SearchAppBar from './lib/Search/SearchAppBar';
-import AllProducts from './lib/AllProducts/AllProducts';
-import SnackBar from './lib/Shared/SnackBar';
-import makeApiRequest from './lib/api';
-import PaymentProcessing from './lib/PaymentProcessing/PaymentProcessing';
-import { paymentMethod } from './lib/constants';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { AppLoadingScreen } from './lib/Shared/AppLoadingScreen';
-
+import {
+  BackHandler,
+  Linking,
+  LogBox,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  StatusBar,
+} from "react-native";
+import BottomNavigation from "./lib/BottomNavigation";
+import { createContext, useEffect, useState } from "react";
+import auth from "@react-native-firebase/auth";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  FIREBASE_CLIENT_ID,
+  WEB_URL,
+  checkUserState,
+  generateOrderId,
+  getProductsAndTotal,
+  navItems,
+  removeData,
+  retrieveData,
+  routePrevious,
+  routeTo,
+  storeData,
+} from "./lib/utils";
+import AppBarWrapper from "./lib/AppBarWrapper";
+import Home from "./lib/Home/Home";
+import Cart from "./lib/Cart/Cart";
+import Orders from "./lib/Orders/Orders";
+import Profile from "./lib/Profile/Profile";
+import HomeAppBar from "./lib/Home/HomeAppBar";
+import ProductDetailAppBar from "./lib/ProductDetail/ProductDetailAppBar";
+import ProductDetails from "./lib/ProductDetail/ProductDetails";
+import AppBarGeneric from "./lib/Shared/AppBarGeneric";
+import Checkout from "./lib/Checkout/Checkout";
+import UpdateAddress from "./lib/Address/UpdateAddress";
+import OrderDetail from "./lib/OrderDetail/OrderDetail";
+import ProfileAppBar from "./lib/Profile/ProfileAppBar";
+import SearchPage from "./lib/Search/SearchPage";
+import SearchAppBar from "./lib/Search/SearchAppBar";
+import AllProducts from "./lib/AllProducts/AllProducts";
+import SnackBar from "./lib/Shared/SnackBar";
+import makeApiRequest from "./lib/api";
+import PaymentProcessing from "./lib/PaymentProcessing/PaymentProcessing";
+import { paymentMethod } from "./lib/constants";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { AppLoadingScreen } from "./lib/Shared/AppLoadingScreen";
 
 const queryClient = new QueryClient();
 export const AppContext = createContext(null);
 // const currectUser = retrieveData({ key: "user" })
 export default function App() {
-
   const [page, setPage] = useState({ label: "home", page: "home" });
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [userDetails, setUserDetails] = useState({});
   // let localOrderId = retrieveData({ key: "orderId" });
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPage, setSelectedPage] = useState("Cart");
-  const [selectedProduct, setSelectedProduct] = useState(
-    []
-  );
+  const [selectedProduct, setSelectedProduct] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -51,6 +67,7 @@ export default function App() {
 
   const [address, setAddress] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("visa");
 
   const [openSnackBarContent, setOpenSnackbarContent] = useState("");
   const [snackSeverity, setSnackSeverity] = useState("success");
@@ -66,29 +83,44 @@ export default function App() {
   const [loadingCache, setLoadingCache] = useState(true);
   const [appLoading, setAppLoading] = useState(false);
   const [productLoading, setProductLoading] = useState(false);
-  const [routeStack, setRouteStack] = useState([{ label: "home", page: "home" }]);
+  const [routeStack, setRouteStack] = useState([
+    { label: "home", page: "home" },
+  ]);
   const [productCartSaving, setProductCartSaving] = useState(false);
-  const [addressSaving, setAddressSaving] = useState(false)
+  const [addressSaving, setAddressSaving] = useState(false);
   const [shipping, setShipping] = useState(0);
 
-  const [name, setName] = useState(selectedAddress !== null ? selectedAddress?.name : "");
-  const [line1, setLine1] = useState(selectedAddress !== null ? selectedAddress?.line1 : "");
-  const [line2, setLine2] = useState(selectedAddress !== null ? selectedAddress?.line2 : "");
-  const [city, setCity] = useState(selectedAddress !== null ? selectedAddress?.city : "");
-  const [userState, setUserState] = useState(selectedAddress !== null ? selectedAddress?.state : "");
-  const [pin, setPin] = useState(selectedAddress !== null ? selectedAddress?.pin : "");
-  const [phone, setPhone] = useState(selectedAddress !== null ? selectedAddress?.phone : "");
+  const [name, setName] = useState(
+    selectedAddress !== null ? selectedAddress?.name : ""
+  );
+  const [line1, setLine1] = useState(
+    selectedAddress !== null ? selectedAddress?.line1 : ""
+  );
+  const [line2, setLine2] = useState(
+    selectedAddress !== null ? selectedAddress?.line2 : ""
+  );
+  const [city, setCity] = useState(
+    selectedAddress !== null ? selectedAddress?.city : ""
+  );
+  const [userState, setUserState] = useState(
+    selectedAddress !== null ? selectedAddress?.state : ""
+  );
+  const [pin, setPin] = useState(
+    selectedAddress !== null ? selectedAddress?.pin : ""
+  );
+  const [phone, setPhone] = useState(
+    selectedAddress !== null ? selectedAddress?.phone : ""
+  );
   const [user, setUser] = useState("");
   const [cartAndOthersLoading, setCartAndOthersLoading] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [consent, setConsent] = useState({
     label: "e",
-    action: () => { },
+    action: () => {},
     visible: false,
-    activeLabel: ""
-  })
-
+    activeLabel: "",
+  });
 
   useEffect(() => {
     setName(selectedAddress !== null ? selectedAddress?.name : "");
@@ -98,15 +130,20 @@ export default function App() {
     setUserState(selectedAddress !== null ? selectedAddress?.state : "");
     setPin(selectedAddress !== null ? selectedAddress?.pin : "");
     setPhone(selectedAddress !== null ? selectedAddress?.phone : "");
-  }, [selectedAddress])
-
+  }, [selectedAddress]);
 
   const redirectOrder = async () => {
     const orderId = await retrieveData({ key: "orderId" });
     if (orderId) {
-      routeTo({ routeStack, newPage: navItems[10], setPage, setRouteStack, clearHistory: true })
+      routeTo({
+        routeStack,
+        newPage: navItems[10],
+        setPage,
+        setRouteStack,
+        clearHistory: true,
+      });
     }
-  }
+  };
   useEffect(() => {
     redirectOrder();
   }, []);
@@ -119,14 +156,15 @@ export default function App() {
       setUserDetails({
         name: user.displayName,
         email: user.email,
-        photo: user.photoURL
+        photo: user.photoURL,
       });
       await storeData({
-        key: "user", value: {
+        key: "user",
+        value: {
           name: user.displayName,
           email: user.email,
-          photo: user.photoURL
-        }
+          photo: user.photoURL,
+        },
       });
       Promise.all([
         cartAPI(
@@ -148,23 +186,19 @@ export default function App() {
           setOrders
         ),
       ])
-        .then(() => {
-         
-
-        })
+        .then(() => {})
         .catch((e) => {
           console.log(e);
           // setInitialTotal();
           // setAppLoading(false);
-        }).finally(() => {
+        })
+        .finally(() => {
           setCartAndOthersLoading(false);
           setAppLoading(false);
-        })
+        });
     } else {
-      setUserDetails({
-
-      });
-      await removeData({ key: "user" })
+      setUserDetails({});
+      await removeData({ key: "user" });
     }
 
     // if (initializing) setInitializing(false);
@@ -174,61 +208,93 @@ export default function App() {
     return subscriber; // unsubscribe on unmount
   }, []);
 
-
   const RenderPage = () => {
     switch (page.page) {
       case "home":
         return {
-          content: <Home />, appBar: <HomeAppBar /> }
+          content: <Home />,
+          appBar: <HomeAppBar />,
+        };
       case "searchProducts":
-        return { content: <SearchPage />, appBar: <SearchAppBar /> }
+        return { content: <SearchPage />, appBar: <SearchAppBar /> };
       case "allProducts":
         return {
-          content: <AllProducts />, appBar: <AppBarGeneric title={selectedCategory === "" ? "All Products" : selectedCategory}
-            customAction={() => setSelectedCategory("")} />
-        }
+          content: <AllProducts />,
+          appBar: (
+            <AppBarGeneric
+              title={
+                selectedCategory === "" ? "All Products" : selectedCategory
+              }
+              customAction={() => setSelectedCategory("")}
+            />
+          ),
+        };
       case "productDetail":
-        return { content: <ProductDetails />, appBar: <ProductDetailAppBar /> }
+        return { content: <ProductDetails />, appBar: <ProductDetailAppBar /> };
       case "cart":
-        return { content: <Cart />, appBar: <AppBarGeneric title={"Shopping Cart"} /> }
+        return {
+          content: <Cart />,
+          appBar: <AppBarGeneric title={"Shopping Cart"} />,
+        };
       case "orders":
-        return { content: <Orders />, appBar: <AppBarGeneric title={"Orders"} /> }
+        return {
+          content: <Orders />,
+          appBar: <AppBarGeneric title={"Orders"} />,
+        };
       case "profile":
-        return { content: <Profile />, appBar: <ProfileAppBar /> }
+        return { content: <Profile />, appBar: <ProfileAppBar /> };
       case "checkout":
-        return { content: <Checkout />, appBar: <AppBarGeneric title={"Checkout"} /> }
+        return {
+          content: <Checkout />,
+          appBar: <AppBarGeneric title={"Checkout"} />,
+        };
       case "address":
         return {
-          content: <UpdateAddress />, appBar: <AppBarGeneric title={"Address"} customAction={() =>
-            routePrevious({ routeStack, setPage, setRouteStack, step: true })
-          } />
-        }
+          content: <UpdateAddress />,
+          appBar: (
+            <AppBarGeneric
+              title={"Address"}
+              customAction={() =>
+                routePrevious({
+                  routeStack,
+                  setPage,
+                  setRouteStack,
+                  step: true,
+                })
+              }
+            />
+          ),
+        };
       case "orderDetail":
-        return { content: <OrderDetail />, appBar: <AppBarGeneric title={"Order Detail"} /> }
+        return {
+          content: <OrderDetail />,
+          appBar: <AppBarGeneric title={"Order Detail"} />,
+        };
       case "paymentProcessing":
-        return { content: <PaymentProcessing />, appBar: <AppBarGeneric title={""} disableBackButton /> }
+        return {
+          content: <PaymentProcessing />,
+          appBar: <AppBarGeneric title={""} disableBackButton />,
+        };
       default:
-        return { content: <Home />, appBar: <HomeAppBar /> }
+        return { content: <Home />, appBar: <HomeAppBar /> };
     }
-  }
+  };
 
   useEffect(() => {
     const backAction = () => {
-      routePrevious({ routeStack, setPage, setRouteStack })
+      routePrevious({ routeStack, setPage, setRouteStack });
       return true;
     };
     const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
+      "hardwareBackPress",
       backAction
     );
 
-    checkUserState({ setIsUserLoggedIn: setIsUserLoggedIn, setUserDetails: setUserDetails });
-
-  }, [])
-
-
-
-
+    checkUserState({
+      setIsUserLoggedIn: setIsUserLoggedIn,
+      setUserDetails: setUserDetails,
+    });
+  }, []);
 
   // const productsAPI = async () => {
   //   // const cachedProducts = await db.table('product').toArray();
@@ -291,7 +357,6 @@ export default function App() {
 
   // };
 
-
   useEffect(() => {
     if (products.length === 0) {
       setAppLoading(true);
@@ -319,98 +384,127 @@ export default function App() {
       ])
         .then(() => {
           setAppLoading(false);
-
         })
         .catch((e) => {
           console.log(e);
           // setInitialTotal();
           // setAppLoading(false);
-        }).finally(() => {
+        })
+        .finally(() => {
           setAppLoading(false);
           setCartAndOthersLoading(false);
-        })
+        });
     } else {
-
       console.log("NOT Calling API");
     }
   }, []);
 
   return (
-    <AppContext.Provider value={{
-      page, setPage, isUserLoggedIn, setIsUserLoggedIn, userDetails, setUserDetails,
+    <AppContext.Provider
+      value={{
+        page,
+        setPage,
+        isUserLoggedIn,
+        setIsUserLoggedIn,
+        userDetails,
+        setUserDetails,
 
-      selectedCategory,
-      setSelectedCategory,
-      // width,
-      selectedPage,
-      setSelectedPage,
-      selectedProduct,
-      setSelectedProduct,
-      setOpenSnackbar,
-      setOpenSnackbarContent,
-      setSnackSeverity,
-      products,
-      setProducts,
-      categories,
-      setCategories,
-      cart,
-      setCart,
-      address,
-      setAddress,
-      orders,
-      setOrders,
-      total,
-      setTotal,
-      orderId,
-      setOrderId,
-      upiMethod,
-      setUpiMethod,
-      loadingCache,
-      openSnackBarContent,
-      snackSeverity,
-      openSnackBar,
-      syncing, setSyncing, setLoadingCache, routeStack,
-      setRouteStack, selectedAddress, setSelectedAddress,
-      selectedOrder, setSelectedOrder,
-      searchText, setSearchText,
-      productCartSaving, setProductCartSaving,
-      addressSaving, setAddressSaving,
-      name, setName, line1, setLine1, line2, setLine2, city, setCity, userState, setUserState,
-      pin, setPin, phone, setPhone,
-      shipping, setShipping,
-      loggingOut, setLoggingOut,
-      cartAndOthersLoading, setCartAndOthersLoading,
-      consent, setConsent,
-      loggingIn, setLoggingIn,
-      productLoading, setProductLoading
-    }}>
-
+        selectedCategory,
+        setSelectedCategory,
+        // width,
+        selectedPage,
+        setSelectedPage,
+        selectedProduct,
+        setSelectedProduct,
+        setOpenSnackbar,
+        setOpenSnackbarContent,
+        setSnackSeverity,
+        products,
+        setProducts,
+        categories,
+        setCategories,
+        cart,
+        setCart,
+        address,
+        setAddress,
+        orders,
+        setOrders,
+        total,
+        setTotal,
+        orderId,
+        setOrderId,
+        upiMethod,
+        setUpiMethod,
+        loadingCache,
+        openSnackBarContent,
+        snackSeverity,
+        openSnackBar,
+        syncing,
+        setSyncing,
+        setLoadingCache,
+        routeStack,
+        setRouteStack,
+        selectedAddress,
+        setSelectedAddress,
+        selectedOrder,
+        setSelectedOrder,
+        searchText,
+        setSearchText,
+        productCartSaving,
+        setProductCartSaving,
+        addressSaving,
+        setAddressSaving,
+        name,
+        setName,
+        line1,
+        setLine1,
+        line2,
+        setLine2,
+        city,
+        setCity,
+        userState,
+        setUserState,
+        pin,
+        setPin,
+        phone,
+        setPhone,
+        shipping,
+        setShipping,
+        loggingOut,
+        setLoggingOut,
+        cartAndOthersLoading,
+        setCartAndOthersLoading,
+        consent,
+        setConsent,
+        loggingIn,
+        setLoggingIn,
+        productLoading,
+        setProductLoading,
+        selectedPaymentMethod,
+        setSelectedPaymentMethod,
+      }}
+    >
       {/* <View style={{height: Platform.OS === "ios" ? 40 : 0, width: 2}}>
 
       </View> */}
       {openSnackBar && <SnackBar />}
       <QueryClientProvider client={queryClient}>
-        <AppBarWrapper child={<>
-          {RenderPage().appBar}
-        </>} />
+        <AppBarWrapper child={<>{RenderPage().appBar}</>} />
       </QueryClientProvider>
 
-      <View style={styles.container}>
-        {RenderPage().content}
-      </View>
-          {products.length === 0 && <AppLoadingScreen />}
+      <View style={styles.container}>{RenderPage().content}</View>
+      {products.length === 0 && <AppLoadingScreen />}
 
       <BottomNavigation />
     </AppContext.Provider>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     // height: "75%"
-  }
-})
+  },
+});
 
 export const cartAPI = async (
   setSnackSeverity,
@@ -521,9 +615,14 @@ export const addToCartAPI = async ({
   setOrders,
   reOrder = false,
   payload = [],
-  setPage, setRouteStack, routeStack, setIsUserLoggedIn, setUserDetails
+  setPage,
+  setRouteStack,
+  routeStack,
+  setIsUserLoggedIn,
+  setUserDetails,
+  skipRedirect = false
 }) => {
-  const userDetails = await retrieveData({ key: "user" })
+  const userDetails = await retrieveData({ key: "user" });
   setSaving(true);
   // console.log("selected", selectedProduct);
   if (selectedProduct) {
@@ -601,11 +700,25 @@ export const addToCartAPI = async ({
               let orderId = await retrieveData({ key: "orderId" });
               setCart(res?.cart);
               setSaving(false);
-              if (orderId) {
-                routeTo({ routeStack, newPage: navItems[10], setPage, setRouteStack, clearHistory: true })
-              } else {
-                routeTo({ routeStack, newPage: navItems[1], setPage, setRouteStack })
+              if(!skipRedirect) {
+                if (orderId) {
+                  routeTo({
+                    routeStack,
+                    newPage: navItems[10],
+                    setPage,
+                    setRouteStack,
+                    clearHistory: true,
+                  });
+                } else {
+                  routeTo({
+                    routeStack,
+                    newPage: navItems[1],
+                    setPage,
+                    setRouteStack,
+                  });
+                }
               }
+              
 
               if (!fromCart) {
                 if (reOrder) {
@@ -621,9 +734,16 @@ export const addToCartAPI = async ({
             setCart(res?.cart);
             setSnackSeverity("warning");
             setOpenSnackbar(true);
-            setOpenSnackbarContent("Some items are adjusted as per availability");
+            setOpenSnackbarContent(
+              "Some items are adjusted as per availability"
+            );
             setSaving(false);
-            routeTo({ routeStack, newPage: navItems[1], setPage, setRouteStack })
+            routeTo({
+              routeStack,
+              newPage: navItems[1],
+              setPage,
+              setRouteStack,
+            });
             if (!fromCart) {
               // setSidePage("Menu");
               // setSubPage("cart");
@@ -636,11 +756,14 @@ export const addToCartAPI = async ({
           console.log(e);
           setSnackSeverity("error");
           setOpenSnackbar(true);
-          setOpenSnackbarContent("Error adding to cart. Please try again later");
-          setSaving(false);
-        }).finally(() => {
+          setOpenSnackbarContent(
+            "Error adding to cart. Please try again later"
+          );
           setSaving(false);
         })
+        .finally(() => {
+          setSaving(false);
+        });
     } else {
       setSaving(false);
       setSnackSeverity("warning");
@@ -693,7 +816,24 @@ export const addToCartAPI = async ({
     setOpenSnackbar(true);
     setSaving(false);
   }
+};
 
+export const setAndRedirect = ({
+  order,
+  setRouteStack,
+  routeStack,
+  setPage,
+  setSelectedOrder
+}) => {
+  console.log("Setting the order and redirect");
+  setSelectedOrder({ ...order, tracking: "" });
+  routeTo({
+    setRouteStack,
+    routeStack,
+    setPage,
+    newPage: navItems[7],
+    stepper: true,
+  });
 };
 
 export const createOrder_upi = async ({
@@ -710,13 +850,22 @@ export const createOrder_upi = async ({
   products,
   cart,
   setPage,
-  routeStack, setRouteStack, setIsUserLoggedIn, setUserDetails
+  routeStack,
+  setRouteStack,
+  setIsUserLoggedIn,
+  setUserDetails,
+  selectedPaymentMethod,
+  setSelectedOrder
 }) => {
   try {
     // if (isMobile) {
     if (userDetails?.email) {
       const order_id = generateOrderId(userDetails?.email);
-      const localAddress = address.filter((v) => v.default)[0].line1 + address.filter((v) => v.default)[0].line2 + address.filter((v) => v.default)[0].city + address.filter((v) => v.default)[0].pin
+      const localAddress =
+        address.filter((v) => v.default)[0].line1 +
+        address.filter((v) => v.default)[0].line2 +
+        address.filter((v) => v.default)[0].city +
+        address.filter((v) => v.default)[0].pin;
       const phoneNumber = address.filter((v) => v.default)[0].phone;
       let productsInCart = getProductsAndTotal(
         cart,
@@ -724,19 +873,25 @@ export const createOrder_upi = async ({
         address.filter((v) => v.default)[0].pin
       );
 
+      const amountToPay = (
+        parseFloat(productsInCart.total) + parseFloat(productsInCart.shipping)
+      ).toString();
+      if (selectedPaymentMethod === "visa") {
+        await storeData({ key: "amount", value: { amount: amountToPay } });
+        await storeData({ key: "startTime", value: { startTime: Date.now() } });
+        await storeData({ key: "orderId", value: { orderId: order_id } });
+      }
 
-
-      const amountToPay = (parseFloat(productsInCart.total) + parseFloat(productsInCart.shipping)).toString();
-      await storeData({ key: "amount", value: { amount: amountToPay } });
-      await storeData({ key: "startTime", value: { startTime: Date.now() } });
-      await storeData({ key: "orderId", value: { orderId: order_id } });
       const reqBody = {
         userId: userDetails?.email,
         orderId: order_id,
         products: productsInCart.cart,
         total: productsInCart.total,
         status: "Order Recieved",
-        paymentStatus: "Payment Processing",
+        paymentStatus:
+          selectedPaymentMethod === "visa"
+            ? "Payment Processing"
+            : "Payment Awaiting",
         box: "true",
         shipping: productsInCart.shipping,
         address: address.filter((v) => v.default)[0],
@@ -759,44 +914,48 @@ export const createOrder_upi = async ({
         //   false
         // );
 
-
-        let paymentLink = '';
+        let paymentLink = "";
         //add cash free exec
-        if (paymentMethod.cashfree) {
-          let res = await makeApiRequest(
-            "POST",
-            {
-              email: userDetails?.email,
-              phone: address.filter((v) => v.default)[0].phone,
-              order_id: order_id,
-              amount:
-                parseFloat(productsInCart.shipping) +
-                parseFloat(productsInCart.total),
-            },
-            "/orders/exec",
-            setSnackSeverity,
-            setOpenSnackbar,
-            setOpenSnackbarContent,
-            false
-          );
-          if (res?.code === 200) {
-            paymentLink = res?.data?.payment_link;
-            await storeData({ key: "paymentLink", value: { paymentLink: paymentLink } });
+        if (selectedPaymentMethod === "visa") {
+          if (paymentMethod.cashfree) {
+            let res = await makeApiRequest(
+              "POST",
+              {
+                email: userDetails?.email,
+                phone: address.filter((v) => v.default)[0].phone,
+                order_id: order_id,
+                amount:
+                  parseFloat(productsInCart.shipping) +
+                  parseFloat(productsInCart.total),
+              },
+              "/orders/exec",
+              setSnackSeverity,
+              setOpenSnackbar,
+              setOpenSnackbarContent,
+              false
+            );
+            if (res?.code === 200) {
+              paymentLink = res?.data?.payment_link;
+              await storeData({
+                key: "paymentLink",
+                value: { paymentLink: paymentLink },
+              });
+            }
+          } else if (paymentMethod.sabPaise) {
+            paymentLink = `${WEB_URL}/pay?name=${userDetails?.name}?address=${localAddress}?amount=1?phone=${phoneNumber}?orderId=${order_id}?email=${userDetails?.email}`;
+            await storeData({
+              key: "paymentLink",
+              value: { paymentLink: paymentLink },
+            });
           }
-        } else if (paymentMethod.sabPaise) {
-          paymentLink = `${WEB_URL}/pay?name=${userDetails?.name}?address=${localAddress}?amount=1?phone=${phoneNumber}?orderId=${order_id}?email=${userDetails?.email}`;
-          await storeData({ key: "paymentLink", value: { paymentLink: paymentLink } });
         }
-
-
-
 
         let res1 = await makeApiRequest(
           "POST",
           {
             ...reqBody,
             paymentLink: paymentLink,
-            tracking: ""
+            tracking: "",
           },
           "/orders/add",
           setSnackSeverity,
@@ -809,7 +968,7 @@ export const createOrder_upi = async ({
           setCart([]);
           await addToCartAPI({
             recalled: false,
-            setSaving: () => { },
+            setSaving: () => {},
             setCart: setCart,
             setSnackSeverity: setSnackSeverity,
             setOpenSnackbar: setOpenSnackbar,
@@ -823,17 +982,19 @@ export const createOrder_upi = async ({
             setAddress: setAddress,
             setOrders: setOrders,
             setPage: setPage,
-            routeStack, setRouteStack, setIsUserLoggedIn, setUserDetails
-
+            routeStack,
+            setRouteStack,
+            setIsUserLoggedIn,
+            setUserDetails,
+            skipRedirect: true
           });
 
           let currentOrders = orders;
           currentOrders.unshift(reqBody);
           setOrders(currentOrders);
-          if (paymentLink) {
-
-            if (Platform.OS !== 'web') {
-              Linking.openURL(paymentLink)
+          if (paymentLink && paymentLink !== "") {
+            if (Platform.OS !== "web") {
+              Linking.openURL(paymentLink);
             } else {
               window.open(paymentLink, "_blank").focus();
             }
@@ -844,16 +1005,30 @@ export const createOrder_upi = async ({
             // localStorage.setItem("link", JSON.stringify(links));
             // localStorage.setItem("mode", upiMethod)
 
-
             // if (isMobile)
             //   window.location.href = paymentLink;
+          } else if (paymentLink === "") {
+            await ordersAPI(
+              setSnackSeverity,
+              setOpenSnackbar,
+              setOpenSnackbarContent,
+              setOrders
+            );
+
+            setAndRedirect({
+              order: orders.filter(
+                (o) => o.orderId === order_id
+              )[0],
+              routeStack,
+              setRouteStack,
+              setPage,
+              setSelectedOrder
+            });
           }
         }
       } catch (e) {
         console.log(e);
       }
-
-
     }
   } catch (e) {
     console.log(e);
@@ -869,17 +1044,18 @@ async function onGoogleButtonPress() {
   return auth().signInWithCredential(googleCredential);
 }
 
-export const login = async ({ loggingIn,  setLoggingIn }) => {
-  if(!loggingIn) {
+export const login = async ({ loggingIn, setLoggingIn }) => {
+  if (!loggingIn) {
     setLoggingIn(true);
     GoogleSignin.configure({
       webClientId: FIREBASE_CLIENT_ID,
     });
-    onGoogleButtonPress().then(() => console.log('Signed in with Google!'))
-      .catch(e => console.log(e))
-      .finally(() => setLoggingIn(false))
+    onGoogleButtonPress()
+      .then(() => console.log("Signed in with Google!"))
+      .catch((e) => console.log(e))
+      .finally(() => setLoggingIn(false));
   }
- 
+
   // await storeData({
   //   value: {
   //     name: "Kevin",
@@ -887,40 +1063,41 @@ export const login = async ({ loggingIn,  setLoggingIn }) => {
   //   }, key: "user"
   // });
   // const res = checkUserState({ setIsUserLoggedIn, setUserDetails });
-  // if(Platform.OS !== "web") 
+  // if(Platform.OS !== "web")
   //   await Updates.reloadAsync();
-  // else 
+  // else
   //   window.location.reload();
   // return res;
+};
 
-}
-
-export const logout = async ({ setIsUserLoggedIn, setUserDetails,
-  setAddress, setOrders,
+export const logout = async ({
+  setIsUserLoggedIn,
+  setUserDetails,
+  setAddress,
+  setOrders,
   setCart,
-  setLoggingOut, loggingOut
+  setLoggingOut,
+  loggingOut,
 }) => {
-  if(!loggingOut) {
+  if (!loggingOut) {
     try {
       setLoggingOut(true);
-  GoogleSignin.configure({
-    webClientId: FIREBASE_CLIENT_ID,
-  });
-  await GoogleSignin.revokeAccess();
-  await GoogleSignin.signOut();
-  auth().signOut()
-  await removeData({ key: "user" });
-  setIsUserLoggedIn(false);
-  setUserDetails({});
-  setAddress([]);
-  setOrders([]);
-  setCart([]);
-    }
-    catch(e){
+      GoogleSignin.configure({
+        webClientId: FIREBASE_CLIENT_ID,
+      });
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      auth().signOut();
+      await removeData({ key: "user" });
+      setIsUserLoggedIn(false);
+      setUserDetails({});
+      setAddress([]);
+      setOrders([]);
+      setCart([]);
+    } catch (e) {
       console.log(e);
     } finally {
-      setLoggingOut(false)
+      setLoggingOut(false);
     }
-  } 
-
-}
+  }
+};
