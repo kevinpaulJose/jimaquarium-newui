@@ -84,13 +84,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.jimaquarium.newui'
+    namespace 'com.jimaquarium.newuii'
     defaultConfig {
-        applicationId 'com.jimaquarium.newui'
+        applicationId 'com.jimaquarium.newuii'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
-        versionName "3.0.4"
+        versionCode 15
+        versionName "3.0.5"
     }
     signingConfigs {
         debug {

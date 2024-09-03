@@ -1,4 +1,4 @@
-package com.jimaquarium.newui
+package com.jimaquarium.newuii
 
 import android.os.Build
 import android.os.Bundle

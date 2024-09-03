@@ -1,4 +1,4 @@
-package com.jimaquarium.newui
+package com.jimaquarium.newuii
 
 import android.app.Application
 import android.content.res.Configuration

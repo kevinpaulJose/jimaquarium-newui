@@ -59,6 +59,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "654317343091-71tt8mjke7u12g578r56kcrb3tl6fese.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jimaquarium.newui",
+            "certificate_hash": "6c5e45dfdbe67c6199fa8fb4f33f662bf1730973"
+          }
+        },
+        {
           "client_id": "654317343091-74amedqandencf5nb19mnf8p3u6a5eun.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -66,6 +74,43 @@
             "certificate_hash": "6409dbbdb26b9e58c97699126942264bd40c9cdc"
           }
         },
+        {
+          "client_id": "654317343091-vhpsvk15kphnlb8abbcl8so8eerbbi6a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jimaquarium.newui",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKrJoU-RoR-ChRsReYmjHEzYKNRznq6Wk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654317343091:android:fb2484e024a205d99ff506",
+        "android_client_info": {
+          "package_name": "com.jimaquarium.newuii"
+        }
+      },
+      "oauth_client": [
         {
           "client_id": "654317343091-r0rdf3f1qe8ad45ougks4e7nn9b4ivu3.apps.googleusercontent.com",
           "client_type": 3
